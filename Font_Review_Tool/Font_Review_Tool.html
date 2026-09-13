@@ -99,6 +99,7 @@
   }
   .stage[hidden] { display: none; }
   .panel-title { margin-bottom: 8px; font-size: 12px; color: #6b7480; }
+  #editCv { touch-action: none; user-select: none; cursor: crosshair; }
   canvas { display: block; }
   .hint { margin-top: 12px; font-size: 12px; line-height: 1.7; color: #6b7480; }
 </style>
@@ -137,7 +138,7 @@
     <canvas id="cv"></canvas>
   </div>
   <div class="stage" id="editStage" hidden>
-    <div class="panel-title">编辑区（点击方格翻转黑白）</div>
+    <div class="panel-title">编辑区（点击方格翻转黑白，按住拖动可连续涂画）</div>
     <canvas id="editCv"></canvas>
   </div>
 </div>
@@ -148,7 +149,7 @@
   字符占页值 P：一个字符占 P 个大行（P=1 高 8 像素，P=2 高 16 像素）。字符宽度 W：一个字符占 W 个字节（W 列）。<br>
   布局：先取 W 个字节放在当前大行的当前位置，再取 W 个字节放在下一个大行（同一列区间），共 P 段；当前行剩余列数不足 W 则换行；整页排不下时停止，翻页从该字符继续。<br>
   勾选"字符边框"可用细红线框出每个字符所占的 W 列 × P 个大行的边界；点击某个红框即可选中该字符，上方显示其首个字节在文件中的地址（十六进制，从 0 开始）。<br>
-  选中字符后右侧出现编辑区：点击编辑区内的方格可翻转黑白，改动会同步到左边点阵区与文件数据；点击"下载 .bin"可导出修改后的文件。<br>
+  选中字符后右侧出现编辑区：点击方格可翻转该像素，按住鼠标拖动可连续涂画（按下时落点为黑则沿途涂白，为白则沿途涂黑，已是目标色的格不变）；改动会同步到左边点阵区与文件数据；点击"下载 .bin"可导出修改后的文件。<br>
   页码输入框可直接输入数字并回车（或点右侧箭头），快速跳转到指定渲染页。
 </p>
 
@@ -185,6 +186,8 @@
   let selectedAddr = null;       // 选中字符的首字节在文件中的地址
   let editCell = null;           // 编辑区当前编辑的字符
   let editPitch = 8;             // 编辑区每格间距
+  let paintValue = -1;           // 涂画目标位：-1 未涂画，0 涂黑，1 涂白
+  let paintLast = null;          // 涂画经过的上一个格
 
   function clampInt(value, min, max, fallback) {
     let n = parseInt(value, 10);
@@ -460,23 +463,80 @@
     render();
   });
 
-  // 点击编辑区的方格：黑白翻转，并同步到文件数据与左侧点阵区
-  editCv.addEventListener('click', function (e) {
+  // 编辑区：把某格设成当前涂画色（已经是目标色则不动），并按字节写回文件数据
+  function paintCell(cell, col, row) {
+    const index = cell.addr + Math.floor(row / 8) * getCharWidth() + col;
+    if (index >= bytes.length) return false;     // 文件末尾不足的位置无数据，不可编辑
+
+    const mask = 1 << (row % 8);
+    const cur = (bytes[index] & mask) ? 1 : 0;
+    if (cur === paintValue) return false;
+
+    if (paintValue) bytes[index] |= mask;        // 0 → 1
+    else bytes[index] &= ~mask;                  // 1 → 0
+    return true;
+  }
+
+  function editPos(e) {
+    const rect = editCv.getBoundingClientRect();
+    return {
+      col: Math.floor((e.clientX - rect.left) / editPitch),
+      row: Math.floor((e.clientY - rect.top) / editPitch)
+    };
+  }
+
+  // 按下：落点为黑则本次涂白，为白则本次涂黑
+  editCv.addEventListener('pointerdown', function (e) {
     if (!editCell) return;
 
-    const P = getPagesPerChar();
     const W = getCharWidth();
-    const rect = editCv.getBoundingClientRect();
-    const col = Math.floor((e.clientX - rect.left) / editPitch);
-    const row = Math.floor((e.clientY - rect.top) / editPitch);
-    if (col < 0 || col >= W || row < 0 || row >= P * 8) return;
+    const rows = getPagesPerChar() * 8;
+    const pos = editPos(e);
+    if (pos.col < 0 || pos.col >= W || pos.row < 0 || pos.row >= rows) return;
 
-    const index = editCell.addr + Math.floor(row / 8) * W + col;
-    if (index >= bytes.length) return;      // 文件末尾不足的位置无数据，不可编辑
+    const index = editCell.addr + Math.floor(pos.row / 8) * W + pos.col;
+    if (index >= bytes.length) return;
 
-    bytes[index] ^= (1 << (row % 8));       // 翻转该位
-    render();                               // 主点阵区与编辑区一起刷新
+    paintValue = ((bytes[index] >> (pos.row % 8)) & 1) ? 0 : 1;
+    paintLast = pos;
+    paintCell(editCell, pos.col, pos.row);
+
+    e.preventDefault();
+    render();
   });
+
+  // 拖动：沿路径连续涂画（插值补上快速移动漏掉的格）
+  document.addEventListener('pointermove', function (e) {
+    if (paintValue < 0 || !editCell) return;
+
+    const W = getCharWidth();
+    const rows = getPagesPerChar() * 8;
+    const pos = editPos(e);
+    if (pos.col === paintLast.col && pos.row === paintLast.row) return;
+
+    const dc = pos.col - paintLast.col;
+    const dr = pos.row - paintLast.row;
+    const steps = Math.max(Math.abs(dc), Math.abs(dr));
+    let changed = false;
+    for (let  = 1;  <= steps; ++) {
+      const c = paintLast.col + Math.round(dc *  / steps);
+      const r = paintLast.row + Math.round(dr *  / steps);
+      if (c < 0 || c >= W || r < 0 || r >= rows) continue;
+      if (paintCell(editCell, c, r)) changed = true;
+    }
+    paintLast = pos;
+
+    if (changed) render();
+    e.preventDefault();
+  });
+
+  // 抬起：结束本次涂画
+  function endPaint() {
+    paintValue = -1;
+    paintLast = null;
+  }
+  document.addEventListener('pointerup', endPaint);
+  document.addEventListener('pointercancel', endPaint);
 
   // 下载修改后的 .bin
   downloadBtn.addEventListener('click', function () {
