@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-仓库基于 CH32V00x 单片机编写、测试，整理收纳了一些基础开发资源。
+仓库基于 CH32V00x 单片机开发、测试，整理了一些基础开发资源。
 
 下方目录链接可访问查看对应内容，[点击此处下载仓库全部资源](https://github.com/INKPTR-STUDIO/MCU-Lab/archive/refs/heads/main.zip)。
 
@@ -38,4 +38,4 @@
 
 ---
 
-更多资源正在编辑整理或测试中，敬请期待……
+更多资源正在开发中，敬请期待……
