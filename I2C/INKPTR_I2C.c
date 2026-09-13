@@ -1,10 +1,18 @@
+/*================================================================================================*/
+// Part 1: Libraries
 #include "INKPTR_I2C.h"
 #include "ch32v00x.h"
 
+
+/*================================================================================================*/
+// Part 2: Time delay function
 static void INKPTR_I2C_SCLDelay(void)
 {
 }
 
+
+/*================================================================================================*/
+// Part 3: Pin packages
 static void INKPTR_I2C_EditSCL(uint8_t Dat)
 {
     if(Dat) {GPIO_WriteBit(INKPTR_I2C_SCL_Port, INKPTR_I2C_SCL_Pin, Bit_SET);}
@@ -23,6 +31,9 @@ static uint8_t INKPTR_I2C_ReadSDA(void)
     return SDA_Bit;
 }
 
+
+/*================================================================================================*/
+// Part 4: Timing modules
 /**
  * @fn      INKPTR_I2C_Start
  * 
@@ -144,6 +155,9 @@ uint8_t INKPTR_I2C_ReceiveByte(void)
     return ReceiveByte;
 }
 
+
+/*================================================================================================*/
+// Part 6: Initialization function
 /**
  * @fn      INKPTR_I2C_Init
  * 
