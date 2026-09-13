@@ -34,6 +34,8 @@
 
 - [***Font_Review_Tool***](Font_Review_Tool/)：bin 字模文件的轻量级审查工具（html），此工具使用 DeepSeek V4 Flash 和 Trae 辅助构建
 
+- [***BINtoHEX***](BINtoHEX/)：bin hex 文件转换工具（html），可用于将 bin 纯数据转换为文本或数组格式，此工具使用 DeepSeek V4 Flash 和 Trae 辅助构建
+
 ---
 
 更多资源正在编辑整理或测试中，敬请期待……
