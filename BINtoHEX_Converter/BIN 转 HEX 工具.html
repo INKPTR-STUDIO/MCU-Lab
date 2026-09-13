@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIN 转 HEX 工具</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", Arial, sans-serif;
+    background: #f5f6f8;
+    margin: 0;
+    padding: 24px;
+    color: #222;
+  }
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px 24px 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+  }
+  h1 { font-size: 20px; margin: 0 0 18px; }
+  .row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  label { font-size: 14px; }
+  input[type="number"] {
+    width: 100px;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  button {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 6px;
+    background: #2f7bff;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  button:hover { background: #1f66e0; }
+  button:disabled { background: #b8c6dd; cursor: not-allowed; }
+  button.secondary { background: #eaeef6; color: #334; }
+  button.secondary:hover { background: #dde4f0; }
+  .info { font-size: 13px; color: #666; }
+  textarea {
+    width: 100%;
+    height: 380px;
+    padding: 10px;
+    border: 1px solid #d5dae3;
+    border-radius: 8px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    resize: vertical;
+    background: #fbfcfe;
+    color: #333;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>BIN 转 HEX 工具</h1>
+
+  <div class="row">
+    <label>1. 选择 BIN 文件：</label>
+    <input type="file" id="fileInput" accept=".bin,application/octet-stream">
+  </div>
+
+  <div class="row">
+    <label for="perLine">2. 每行字节数：</label>
+    <input type="number" id="perLine" value="16" min="1" step="1">
+    <label><input type="checkbox" id="arrayMode"> 数组代码格式（0x 前缀 + “, ”后缀）</label>
+    <span class="info" id="fileInfo">未导入文件</span>
+  </div>
+
+  <div class="row">
+    <button id="exportBtn" disabled>3. 导出 HEX</button>
+    <button id="saveBtn" class="secondary" disabled>另存为 .txt/.hex</button>
+    <button id="clearBtn" class="secondary">清空</button>
+  </div>
+
+  <textarea id="output" spellcheck="false" placeholder="导入 BIN 文件后，这里会显示分行后的十六进制文本..."></textarea>
+</div>
+
+<script>
+  let currentBytes = null;   // Uint8Array
+  let currentName = "output";
+
+  const fileInput = document.getElementById("fileInput");
+  const perLineInput = document.getElementById("perLine");
+  const arrayModeInput = document.getElementById("arrayMode");
+  const fileInfo = document.getElementById("fileInfo");
+  const output = document.getElementById("output");
+  const exportBtn = document.getElementById("exportBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const clearBtn = document.getElementById("clearBtn");
+
+  // 读取文件 -> Uint8Array
+  fileInput.addEventListener("change", function () {
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      currentBytes = new Uint8Array(e.target.result);
+      currentName = file.name.replace(/\.bin$/i, "") || "output";
+      fileInfo.textContent = "已导入：" + file.name + "（" + currentBytes.length + " 字节）";
+      // 导入后立即按当前设置生成
+      render();
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  // 每行字节数变化时实时重新分行
+  perLineInput.addEventListener("input", render);
+
+  // 勾选/取消数组代码格式时实时重新生成
+  arrayModeInput.addEventListener("change", render);
+
+  function render() {
+    if (!currentBytes) return;
+    let perLine = parseInt(perLineInput.value, 10);
+    if (!perLine || perLine < 1) perLine = 1;
+    const arrayMode = arrayModeInput.checked;
+
+    const lines = [];
+    for (let i = 0; i < currentBytes.length; i += perLine) {
+      const chunk = currentBytes.subarray(i, i + perLine);
+      const parts = [];
+      for (let j = 0; j < chunk.length; j++) {
+        const hex = chunk[j].toString(16).toUpperCase().padStart(2, "0");
+        parts.push(arrayMode ? "0x" + hex : hex);
+      }
+      lines.push(parts.join(arrayMode ? ", " : " "));
+    }
+
+    // 数组代码格式：行尾补逗号，方便整段复制进代码
+    output.value = arrayMode ? lines.join(",\n") : lines.join("\n");
+    exportBtn.disabled = false;
+    saveBtn.disabled = false;
+  }
+
+  // 生成纯文本内容（若尚未渲染则先渲染）
+  function getText() {
+    if (!output.value && currentBytes) render();
+    return output.value;
+  }
+
+  // 导出：下载 .hex 文件
+  exportBtn.addEventListener("click", function () {
+    if (!currentBytes) return;
+    const text = getText();
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = currentName + ".hex";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // 另存为 txt/hex（使用系统保存框，可选格式扩展名）
+  saveBtn.addEventListener("click", function () {
+    if (!currentBytes) return;
+    const text = getText();
+    if (window.showSaveFilePicker) {
+      window.showSaveFilePicker({
+        suggestedName: currentName + ".hex",
+        types: [
+          { description: "HEX 文本", accept: { "text/plain": [".hex", ".txt"] } }
+        ]
+      }).then(function (handle) {
+        return handle.createWritable();
+      }).then(function (writable) {
+        return writable.write(text).then(function () { return writable.close(); });
+      }).catch(function () { /* 用户取消 */ });
+    } else {
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = currentName + ".hex";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  });
+
+  clearBtn.addEventListener("click", function () {
+    currentBytes = null;
+    currentName = "output";
+    fileInput.value = "";
+    output.value = "";
+    fileInfo.textContent = "未导入文件";
+    exportBtn.disabled = true;
+    saveBtn.disabled = true;
+  });
+</script>
+</body>
+</html>
