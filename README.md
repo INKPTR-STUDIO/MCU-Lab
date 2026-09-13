@@ -24,17 +24,17 @@
 
 ### 🔤 点阵字模
 
-- [***ASCII_6x8***](ASCII_6x8/)：ASCII 字符集的 6x8 点阵字模，每字节高位在下、低位在上，竖置横排（个人原创手绘）
+- [***ASCII_6x8***](ASCII_6x8/)：个人原创手绘的 6x8 点阵字模，涵盖 ASCII 字符集 0x20~0x7e 的基础字符。
 
-- [***ASCII_8x16***](ASCII_8x16/)：ASCII 字符集的 8x16 点阵字模，每字节高位在下、低位在上，竖置横排（个人原创手绘）
+- [***ASCII_8x16***](ASCII_8x16/)：个人原创手绘的 8x16 点阵字模，涵盖 ASCII 字符集 0x20~0x7e 的基础字符。
 
 <br>
 
 ### 🛠️ 实用工具
 
-- [***Font_Review_Tool***](Font_Review_Tool/)：bin 字模文件的轻量级审查工具（html），此工具使用 DeepSeek V4 Flash 和 Trae 辅助构建
+- [***Font_Review_Tool***](Font_Review_Tool/)：bin 字模文件的轻量级审查工具（html），用于字模文件的字体预览和单字符精修，此工具使用 DeepSeek V4 Flash 和 Trae 辅助构建
 
-- [***BINtoHEX_Converter***](BINtoHEX_Converter/)：bin hex 文件转换工具（html），可用于将 bin 纯数据转换为文本或数组格式，此工具使用 DeepSeek V4 Flash 和 Trae 辅助构建
+- [***BINtoHEX_Converter***](BINtoHEX_Converter/)：bin hex 文件转换工具（html），用于将 bin 纯数据转换为文本或数组格式，此工具使用 DeepSeek V4 Flash 和 Trae 辅助构建
 
 ---
 
