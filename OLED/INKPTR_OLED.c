@@ -46,7 +46,7 @@ static void INKPTR_OLED_Dat(void)
  * 
  * @brief   Edit OLED display settings.
  * 
- * @param   | Mode                              | Dat
+ * @param   | SetMode                           | Dat
  *          -----------------------------------------------------------------------------------------------------------
  *          | INKPTR_OLED_SetMode_Brightness    | (Value: 0 ~ 255)
  *          | INKPTR_OLED_SetMode_X_FlipMode    | INKPTR_OLED_SetMode_X_Flip_Normal / INKPTR_OLED_SetMode_X_Flip_Mirror
