@@ -157,7 +157,7 @@ uint8_t INKPTR_I2C_ReceiveByte(void)
 
 
 /*================================================================================================*/
-// Part 6: Initialization function
+// Part 5: Initialization function
 /**
  * @fn      INKPTR_I2C_Init
  * 
