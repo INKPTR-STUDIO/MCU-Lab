@@ -149,17 +149,31 @@ void INKPTR_OLED_Brush(uint8_t Page_Begin, uint8_t Page_End, uint8_t List_Begin,
 }
 
 /**
- * @fn      INKPTR_OLED_Draw
+ * @fn      INKPTR_OLED_Clear
+ *
+ * @brief   Clear the content displayed on the screen.
+ *
+ * @param   none
+ *
+ * @return  none
+ */
+void INKPTR_OLED_Clear(void)
+{
+    INKPTR_OLED_Brush(0, INKPTR_OLED_Model_Dat[INKPTR_OLED_Model][3], 0, INKPTR_OLED_Model_Dat[INKPTR_OLED_Model][4], 0x00);
+}
+
+/**
+ * @fn      INKPTR_OLED_Draw_CmdHead
  * 
- * @brief   Send bytes with "INKPTR_I2C_SendByte" & "INKPTR_I2C_ReceiveACK" after the function to display them.
- *          Pay attention to timing integrity, don't forget to end the sequence with "INKPTR_I2C_Stop"!
+ * @brief   Command header for drawing the screen.
+ *          Later, data will be sent using "INKPTR_OLED_Draw_Data", and it must end with "INKPTR_OLED_Draw_CmdTail"!
  * 
  * @param   Page_Begin  - the beginning of page add.
  *          List_Begin  - the beginning of list add.
  * 
  * @return  none
  */
-void INKPTR_OLED_Draw(uint8_t Page_Begin, uint8_t List_Begin)
+void INKPTR_OLED_Draw_CmdHead(uint8_t Page_Begin, uint8_t List_Begin)
 {
     if(INKPTR_OLED_ValueCheck(0, Page_Begin, 0, List_Begin))    {return;}
 
@@ -172,6 +186,37 @@ void INKPTR_OLED_Draw(uint8_t Page_Begin, uint8_t List_Begin)
     INKPTR_I2C_Stop();
 
     INKPTR_OLED_Dat();
+}
+
+/**
+ * @fn      INKPTR_OLED_Draw_Data
+ *
+ * @brief   Send the drawing data.
+ *          This function is used in conjunction with "INKPTR_OLED_Draw_CmdHead".
+ *
+ * @param   Dat  - the drawing data.
+ *
+ * @return  none
+ */
+void INKPTR_OLED_Draw_Data(uint8_t Dat)
+{
+    INKPTR_I2C_SendByte(Dat);
+    INKPTR_I2C_ReceiveACK();
+}
+
+/**
+ * @fn      INKPTR_OLED_Draw_CmdTail
+ *
+ * @brief   Command tail for drawing the screen.
+ *          This function is used in conjunction with "INKPTR_OLED_Draw_CmdHead".
+ *
+ * @param   none
+ *
+ * @return  none
+ */
+void INKPTR_OLED_Draw_CmdTail(void)
+{
+    INKPTR_I2C_Stop();
 }
 
 /**
@@ -238,6 +283,8 @@ void INKPTR_OLED_Init(INKPTR_OLED_AddressingMode AddressingMode, INKPTR_OLED_Set
 {
     uint8_t i;
 
+    INKPTR_I2C_Init();
+
     INKPTR_OLED_Set(INKPTR_OLED_SetMode_ShowSwitch, INKPTR_OLED_SetMode_Show_DISABLE);
     INKPTR_OLED_Set(INKPTR_OLED_SetMode_RollSwitch, INKPTR_OLED_SetMode_Roll_DISABLE);
 
@@ -255,7 +302,7 @@ void INKPTR_OLED_Init(INKPTR_OLED_AddressingMode AddressingMode, INKPTR_OLED_Set
     INKPTR_OLED_Set(INKPTR_OLED_SetMode_X_FlipMode, X_FlipMode);
     INKPTR_OLED_Set(INKPTR_OLED_SetMode_Y_FlipMode, Y_FlipMode);
     INKPTR_OLED_Set(INKPTR_OLED_SetMode_ColorMode, ColorMode);
-    INKPTR_OLED_Brush(0, INKPTR_OLED_Model_Dat[INKPTR_OLED_Model][3], 0, INKPTR_OLED_Model_Dat[INKPTR_OLED_Model][4], 0);
+    INKPTR_OLED_Clear();
 
     INKPTR_OLED_Set(INKPTR_OLED_SetMode_ShowSwitch, INKPTR_OLED_SetMode_Show_ENABLE);
 }
