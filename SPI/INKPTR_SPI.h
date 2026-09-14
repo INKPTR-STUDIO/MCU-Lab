@@ -1,8 +1,8 @@
 #ifndef INKPTR_SPI_H
 #define INKPTR_SPI_H
 
-#include "ch32v00x.h"
-
+/*================================================================================================*/
+// Part 1: Adjustable parameter macro definition
 // GPIO mapping register
 #define INKPTR_SPI_RCC_APB2Periph   RCC_APB2Periph_GPIOA
 // GPIO speed
@@ -22,6 +22,9 @@
 // SPI mode - input value of 0 ~ 3.
 #define INKPTR_SPI_Mode             0
 
+/*================================================================================================*/
+// Part 2: Library and interface function declarations
+#include "ch32v00x.h"
 void    INKPTR_SPI_Init(void);
 void    INKPTR_SPI_Start(void);
 void    INKPTR_SPI_Stop(void);
