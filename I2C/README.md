@@ -2,8 +2,6 @@
 
 使用时钟线 SCL 和数据线 SDA 进行通信的协议，两线均应为开漏输出模式。
 
-[点击此处下载 I2C 资源](https://download-directory.github.io/?url=https://github.com/INKPTR-STUDIO/MCU-Lab/tree/main/I2C)
-
 <br>
 
 ## 代码结构
