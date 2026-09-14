@@ -1,6 +1,11 @@
+/*================================================================================================*/
+// Part 1: Libraries
 #include "INKPTR_SPI.h"
 #include "ch32v00x.h"
 
+
+/*================================================================================================*/
+// Part 2: Time delay function
 static void INKPTR_SPI_CSDelay(void)
 {
 }
@@ -8,6 +13,9 @@ static void INKPTR_SPI_SCKDelay(void)
 {
 }
 
+
+/*================================================================================================*/
+// Part 3: Pin packages
 static void INKPTR_SPI_EditSCK(uint8_t Dat)
 {
 	if(Dat) {GPIO_WriteBit(INKPTR_SPI_SCK_Port, INKPTR_SPI_SCK_Pin, Bit_SET);}
@@ -24,6 +32,9 @@ static uint8_t INKPTR_SPI_ReadMISO(void)
     if(GPIO_ReadInputDataBit(INKPTR_SPI_MISO_Port, INKPTR_SPI_MISO_Pin) == Bit_SET)	{return 1;}
     else																			{return 0;}
 }
+
+/*================================================================================================*/
+// Part 4: The swap bytes timing modules for each mode
 static uint8_t INKPTR_SPI_SwapBytes_Mode0(uint8_t SendByte)
 {
 	uint8_t i, ReceiveByte = 0x00;
@@ -78,6 +89,8 @@ static uint8_t INKPTR_SPI_SwapBytes_Mode3(uint8_t SendByte)
 }
 
 
+/*================================================================================================*/
+// Part 5: Timing modules
 /**
  * @fn      INKPTR_SPI_Start
  * 
@@ -108,6 +121,33 @@ void INKPTR_SPI_Stop(void)
 	INKPTR_SPI_CSDelay();
 }
 
+/**
+ * @fn      INKPTR_SPI_SwapBytes
+ * 
+ * @brief   Initialize the corresponding pins.
+ * 
+ * @param   SendByte	- byte data to send.
+ * 
+ * @return  The received acknowledgment.
+ */
+uint8_t INKPTR_SPI_SwapBytes(uint8_t SendByte)
+{
+	uint8_t ReceiveByte;
+
+	switch (INKPTR_SPI_Mode)
+	{
+		case 0:	{ReceiveByte = INKPTR_SPI_SwapBytes_Mode0(SendByte);	break;}
+		case 1:	{ReceiveByte = INKPTR_SPI_SwapBytes_Mode1(SendByte);	break;}
+		case 2:	{ReceiveByte = INKPTR_SPI_SwapBytes_Mode2(SendByte);	break;}
+		case 3:	{ReceiveByte = INKPTR_SPI_SwapBytes_Mode3(SendByte);	break;}
+	}
+
+	return ReceiveByte;
+}
+
+
+/*================================================================================================*/
+// Part 6: Initialization function
 /**
  * @fn      INKPTR_SPI_Init
  * 
@@ -147,26 +187,3 @@ void INKPTR_SPI_Init(void)
 	else					{INKPTR_SPI_EditSCK(1);}
 }
 
-/**
- * @fn      INKPTR_SPI_SwapBytes
- * 
- * @brief   Initialize the corresponding pins.
- * 
- * @param   SendByte	- byte data to send.
- * 
- * @return  The received acknowledgment.
- */
-uint8_t INKPTR_SPI_SwapBytes(uint8_t SendByte)
-{
-	uint8_t ReceiveByte;
-
-	switch (INKPTR_SPI_Mode)
-	{
-		case 0:	{ReceiveByte = INKPTR_SPI_SwapBytes_Mode0(SendByte);	break;}
-		case 1:	{ReceiveByte = INKPTR_SPI_SwapBytes_Mode1(SendByte);	break;}
-		case 2:	{ReceiveByte = INKPTR_SPI_SwapBytes_Mode2(SendByte);	break;}
-		case 3:	{ReceiveByte = INKPTR_SPI_SwapBytes_Mode3(SendByte);	break;}
-	}
-
-	return ReceiveByte;
-}
