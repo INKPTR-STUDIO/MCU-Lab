@@ -2,7 +2,7 @@
 #define INKPTR_OLED_H
 
 /*================================================================================================*/
-// Part 3: Library and interface function declarations
+// Part 1: Library and interface function declarations
 #include "ch32v00x.h"
 void    INKPTR_OLED_Init(INKPTR_OLED_AddressingMode AddressingMode, INKPTR_OLED_SetMode_X_Flip X_FlipMode, INKPTR_OLED_SetMode_Y_Flip Y_FlipMode, INKPTR_OLED_SetMode_Color ColorMode, uint8_t Brightness);
 void    INKPTR_OLED_Set(INKPTR_OLED_SetMode SetMode, uint8_t Dat);
@@ -11,14 +11,14 @@ void    INKPTR_OLED_Draw(uint8_t Page_Begin, uint8_t List_Begin);
 void    INKPTR_OLED_Roll(uint8_t Page_Begin, uint8_t Page_End, uint8_t List_Begin, uint8_t List_End, INKPTR_OLED_RollMode RollMode);
 
 /*================================================================================================*/
-// Part 1: Adjustable parameter macro definition
+// Part 2: Adjustable parameter macro definition
 #define INKPTR_OLED_Model 0
 // 128*64	> 0
 // 128*32	> 1
 // 72*40	> 2
 
 /*================================================================================================*/
-// Part 2: Fixed parameter macro definitions and enumerations
+// Part 3: Fixed parameter macro definitions and enumerations
 #define INKPTR_OLED_ADD 0x78
 typedef enum {INKPTR_OLED_AddressingMode_HorizontalMode = 0, INKPTR_OLED_AddressingMode_VerticalMode, INKPTR_OLED_AddressingMode_PageMode} INKPTR_OLED_AddressingMode;
 typedef enum {INKPTR_OLED_SetMode_Brightness = 0, INKPTR_OLED_SetMode_X_FlipMode, INKPTR_OLED_SetMode_Y_FlipMode, INKPTR_OLED_SetMode_ColorMode, INKPTR_OLED_SetMode_RollSwitch, INKPTR_OLED_SetMode_ShowSwitch} INKPTR_OLED_SetMode;
