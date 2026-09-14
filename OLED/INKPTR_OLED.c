@@ -1,9 +1,12 @@
+/*================================================================================================*/
+// Part 1: Libraries
 #include "INKPTR_OLED.h"
 #include "INKPTR_I2C.h"
 #include "ch32v00x.h"
 
 
-#define INKPTR_OLED_ADD 0x78
+/*================================================================================================*/
+// Part 2: OLED mode parameters
 static const uint8_t INKPTR_OLED_Model_Dat[3][5]=
 {
     {0x3f, 0x12, 0x00, 7, 127}, // 128*64 Model
@@ -20,6 +23,10 @@ static const uint8_t INKPTR_OLED_InitCmd[]=
     0xdB,0x40,  // VCOMH voltage
     0xa4        // RAM display
 };
+
+
+/*================================================================================================*/
+// Part 3: Boundary checking function
 static uint8_t INKPTR_OLED_ValueCheck(uint8_t Page_min, uint8_t Page_max, uint8_t List_min, uint8_t List_max)
 {
     if(Page_min > Page_max)                                     {return 1;}
@@ -28,6 +35,10 @@ static uint8_t INKPTR_OLED_ValueCheck(uint8_t Page_min, uint8_t Page_max, uint8_
     if(List_max > INKPTR_OLED_Model_Dat[INKPTR_OLED_Model][4])  {return 1;}
     return 0;
 }
+
+
+/*================================================================================================*/
+// Part 4: Data header packages
 static void INKPTR_OLED_Cmd(void)
 {
     INKPTR_I2C_Start();
@@ -41,6 +52,9 @@ static void INKPTR_OLED_Dat(void)
     INKPTR_I2C_SendByte(0x40);              INKPTR_I2C_ReceiveACK();
 }
 
+
+/*================================================================================================*/
+// Part 5: Functional function
 /**
  * @fn      INKPTR_OLED_Set
  * 
@@ -161,6 +175,47 @@ void INKPTR_OLED_Draw(uint8_t Page_Begin, uint8_t List_Begin)
 }
 
 /**
+ * @fn      INKPTR_OLED_Roll
+ * 
+ * @brief   Set up and enable the scrolling.
+ * 
+ * @param   Page_Begin  - the beginning of page add.
+ *          Page_End    - the ending of page add.
+ *          List_Begin  - the beginning of list add.
+ *          List_End    - the ending of list add.
+ *          RollMode    - select one from the scrolling modes.
+ *              Scroll Left:    INKPTR_OLED_RollMode_Left_1 ~ INKPTR_OLED_RollMode_Left_8
+ *              Scroll Right:   INKPTR_OLED_RollMode_Right_1 ~ INKPTR_OLED_RollMode_Right_8
+ *              (The bigger the suffix value, the faster the speed.)
+ * 
+ * @return  none
+ */
+void INKPTR_OLED_Roll(uint8_t Page_Begin, uint8_t Page_End, uint8_t List_Begin, uint8_t List_End, INKPTR_OLED_RollMode RollMode)
+{
+    uint8_t SpeedTable[] = {3, 2, 1, 0, 6, 5, 4, 7};
+
+    if(INKPTR_OLED_ValueCheck(Page_Begin, Page_End, List_Begin, List_End))  {return;}
+
+    INKPTR_OLED_Set(INKPTR_OLED_SetMode_RollSwitch, INKPTR_OLED_SetMode_Roll_DISABLE);
+
+    INKPTR_OLED_Cmd();
+    if(RollMode & 0x80) {INKPTR_I2C_SendByte(0x27); INKPTR_I2C_ReceiveACK();}
+    else                {INKPTR_I2C_SendByte(0x26); INKPTR_I2C_ReceiveACK();}
+    INKPTR_I2C_SendByte(0);                                 INKPTR_I2C_ReceiveACK();
+    INKPTR_I2C_SendByte(Page_Begin);                        INKPTR_I2C_ReceiveACK();
+    INKPTR_I2C_SendByte(SpeedTable[RollMode & (~0x80)]);    INKPTR_I2C_ReceiveACK();
+    INKPTR_I2C_SendByte(Page_End);                          INKPTR_I2C_ReceiveACK();
+    INKPTR_I2C_SendByte(List_Begin);                        INKPTR_I2C_ReceiveACK();
+    INKPTR_I2C_SendByte(List_End);                          INKPTR_I2C_ReceiveACK();
+    INKPTR_I2C_Stop();
+
+    INKPTR_OLED_Set(INKPTR_OLED_SetMode_RollSwitch, INKPTR_OLED_SetMode_Roll_ENABLE);
+}
+
+
+/*================================================================================================*/
+// Part 6: Initialization function
+/**
  * @fn      INKPTR_OLED_Init
  * 
  * @brief   Complete the display setup initialization.
@@ -203,42 +258,4 @@ void INKPTR_OLED_Init(INKPTR_OLED_AddressingMode AddressingMode, INKPTR_OLED_Set
     INKPTR_OLED_Brush(0, INKPTR_OLED_Model_Dat[INKPTR_OLED_Model][3], 0, INKPTR_OLED_Model_Dat[INKPTR_OLED_Model][4], 0);
 
     INKPTR_OLED_Set(INKPTR_OLED_SetMode_ShowSwitch, INKPTR_OLED_SetMode_Show_ENABLE);
-}
-
-/**
- * @fn      INKPTR_OLED_Roll
- * 
- * @brief   Set up and enable the scrolling.
- * 
- * @param   Page_Begin  - the beginning of page add.
- *          Page_End    - the ending of page add.
- *          List_Begin  - the beginning of list add.
- *          List_End    - the ending of list add.
- *          RollMode    - select one from the scrolling modes.
- *              Scroll Left:    INKPTR_OLED_RollMode_Left_1 ~ INKPTR_OLED_RollMode_Left_8
- *              Scroll Right:   INKPTR_OLED_RollMode_Right_1 ~ INKPTR_OLED_RollMode_Right_8
- *              (The bigger the suffix value, the faster the speed.)
- * 
- * @return  none
- */
-void INKPTR_OLED_Roll(uint8_t Page_Begin, uint8_t Page_End, uint8_t List_Begin, uint8_t List_End, INKPTR_OLED_RollMode RollMode)
-{
-    uint8_t SpeedTable[] = {3, 2, 1, 0, 6, 5, 4, 7};
-
-    if(INKPTR_OLED_ValueCheck(Page_Begin, Page_End, List_Begin, List_End))  {return;}
-
-    INKPTR_OLED_Set(INKPTR_OLED_SetMode_RollSwitch, INKPTR_OLED_SetMode_Roll_DISABLE);
-
-    INKPTR_OLED_Cmd();
-    if(RollMode & 0x80) {INKPTR_I2C_SendByte(0x27); INKPTR_I2C_ReceiveACK();}
-    else                {INKPTR_I2C_SendByte(0x26); INKPTR_I2C_ReceiveACK();}
-    INKPTR_I2C_SendByte(0);                                 INKPTR_I2C_ReceiveACK();
-    INKPTR_I2C_SendByte(Page_Begin);                        INKPTR_I2C_ReceiveACK();
-    INKPTR_I2C_SendByte(SpeedTable[RollMode & (~0x80)]);    INKPTR_I2C_ReceiveACK();
-    INKPTR_I2C_SendByte(Page_End);                          INKPTR_I2C_ReceiveACK();
-    INKPTR_I2C_SendByte(List_Begin);                        INKPTR_I2C_ReceiveACK();
-    INKPTR_I2C_SendByte(List_End);                          INKPTR_I2C_ReceiveACK();
-    INKPTR_I2C_Stop();
-
-    INKPTR_OLED_Set(INKPTR_OLED_SetMode_RollSwitch, INKPTR_OLED_SetMode_Roll_ENABLE);
 }
