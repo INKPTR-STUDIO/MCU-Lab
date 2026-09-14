@@ -283,8 +283,6 @@ void INKPTR_OLED_Init(INKPTR_OLED_AddressingMode AddressingMode, INKPTR_OLED_Set
 {
     uint8_t i;
 
-    INKPTR_I2C_Init();
-
     INKPTR_OLED_Set(INKPTR_OLED_SetMode_ShowSwitch, INKPTR_OLED_SetMode_Show_DISABLE);
     INKPTR_OLED_Set(INKPTR_OLED_SetMode_RollSwitch, INKPTR_OLED_SetMode_Roll_DISABLE);
 
