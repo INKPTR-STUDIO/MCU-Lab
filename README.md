@@ -10,7 +10,7 @@
 
 ### 📡 通信协议
 
-- [***I2C***](I2C/)：IIC / I2C 通信协议（常规 2 线，SCL、SDA）
+- [***IIC***](IIC/)：IIC / I2C 通信协议（常规 2 线，SCL、SDA）
 
 - [***SPI***](SPI/)：SPI 通信协议（常规 4 线，CS、SCK、MOSI、MISO）
 
