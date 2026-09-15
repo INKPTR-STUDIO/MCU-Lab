@@ -10,9 +10,9 @@
 
 ### 📡 通信协议
 
-- [***IIC***](IIC/)：IIC / I2C 通信协议（常规 2 线，SCL、SDA）
+- [***SoftIIC***](SoftIIC/)：软件 IIC / I2C 通信协议（常规 2 线，SCL、SDA）
 
-- [***SPI***](SPI/)：SPI 通信协议（常规 4 线，CS、SCK、MOSI、MISO）
+- [***SoftSPI***](SoftSPI/)：软件 SPI 通信协议（常规 4 线，CS、SCK、MOSI、MISO）
 
 <br>
 
