@@ -1,7 +1,7 @@
 /*================================================================================================*/
 // Part 1: Libraries and fixed parameter macro definitions
 #include "INKPTR_OLED.h"
-#include "INKPTR_IIC.h"
+#include "INKPTR_SoftIIC.h"
 #include "ch32v00x.h"
 
 #define OLED_ADD                        0x78
@@ -65,15 +65,15 @@ static uint8_t OLED_ValueCheck(uint8_t Page_min, uint8_t Page_max, uint8_t List_
 // Part 4: Data header packages
 static void OLED_Cmd(void)
 {
-    IIC_Start();
-    IIC_SendByte(OLED_ADD);       IIC_ReceiveACK();
-    IIC_SendByte(OLED_CmdRegister);   IIC_ReceiveACK();
+    SoftIIC_Start();
+    SoftIIC_SendByte(OLED_ADD);         SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(OLED_CmdRegister); SoftIIC_ReceiveACK();
 }
 static void OLED_Dat(void)
 {
-    IIC_Start();
-    IIC_SendByte(OLED_ADD);       IIC_ReceiveACK();
-    IIC_SendByte(OLED_DatRegister);   IIC_ReceiveACK();
+    SoftIIC_Start();
+    SoftIIC_SendByte(OLED_ADD);         SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(OLED_DatRegister); SoftIIC_ReceiveACK();
 }
 
 
@@ -101,14 +101,14 @@ void OLED_Set(OLED_SetMode SetMode, uint8_t Dat)
     OLED_Cmd();
     if(SetMode == OLED_SetMode_Brightness)
     {
-        IIC_SendByte(OLED_BrightnessCmd);     IIC_ReceiveACK();
-        IIC_SendByte(Dat);                    IIC_ReceiveACK();
+        SoftIIC_SendByte(OLED_BrightnessCmd);     SoftIIC_ReceiveACK();
+        SoftIIC_SendByte(Dat);                    SoftIIC_ReceiveACK();
     }
     else
     {
-        IIC_SendByte(Dat);                    IIC_ReceiveACK();
+        SoftIIC_SendByte(Dat);                    SoftIIC_ReceiveACK();
     }
-    IIC_Stop();
+    SoftIIC_Stop();
 }
 
 /**
@@ -134,13 +134,13 @@ void OLED_Brush(uint8_t Page_Begin, uint8_t Page_End, uint8_t List_Begin, uint8_
 
     for(y = Page_Begin ; y < Page_End+1 ; y++) {
         OLED_Cmd();
-        IIC_SendByte(OLED_PointerPageCmd + y);                                                                                   IIC_ReceiveACK();
-        IIC_SendByte(OLED_PointerListCmd_LSN & (List_Begin + OLED_Model_Dat[OLED_Model][OLED_Model_Index_Listadjusting]));       IIC_ReceiveACK();
-        IIC_SendByte(OLED_PointerListCmd_MSN | ((List_Begin + OLED_Model_Dat[OLED_Model][OLED_Model_Index_Listadjusting])>>4));  IIC_ReceiveACK();
-        IIC_Stop();
+        SoftIIC_SendByte(OLED_PointerPageCmd + y);                                                                                   SoftIIC_ReceiveACK();
+        SoftIIC_SendByte(OLED_PointerListCmd_LSN & (List_Begin + OLED_Model_Dat[OLED_Model][OLED_Model_Index_Listadjusting]));       SoftIIC_ReceiveACK();
+        SoftIIC_SendByte(OLED_PointerListCmd_MSN | ((List_Begin + OLED_Model_Dat[OLED_Model][OLED_Model_Index_Listadjusting])>>4));  SoftIIC_ReceiveACK();
+        SoftIIC_Stop();
         OLED_Dat();
-        for(x = List_Begin ; x < (List_End+1) ; x++) {IIC_SendByte(Style_Byte);    IIC_ReceiveACK();}
-        IIC_Stop();
+        for(x = List_Begin ; x < (List_End+1) ; x++) {SoftIIC_SendByte(Style_Byte);    SoftIIC_ReceiveACK();}
+        SoftIIC_Stop();
     }
 }
 
@@ -176,10 +176,10 @@ void OLED_Draw_CmdHead(uint8_t Page_Begin, uint8_t List_Begin)
     OLED_Set(OLED_SetMode_OtherOptions, OLED_SetMode_Roll_DISABLE);
 
     OLED_Cmd();
-    IIC_SendByte(OLED_PointerPageCmd + Page_Begin);                                                                          IIC_ReceiveACK();
-    IIC_SendByte(OLED_PointerListCmd_LSN & (List_Begin + OLED_Model_Dat[OLED_Model][OLED_Model_Index_Listadjusting]));       IIC_ReceiveACK();
-    IIC_SendByte(OLED_PointerListCmd_MSN | ((List_Begin + OLED_Model_Dat[OLED_Model][OLED_Model_Index_Listadjusting])>>4));  IIC_ReceiveACK();
-    IIC_Stop();
+    SoftIIC_SendByte(OLED_PointerPageCmd + Page_Begin);                                                                          SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(OLED_PointerListCmd_LSN & (List_Begin + OLED_Model_Dat[OLED_Model][OLED_Model_Index_Listadjusting]));       SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(OLED_PointerListCmd_MSN | ((List_Begin + OLED_Model_Dat[OLED_Model][OLED_Model_Index_Listadjusting])>>4));  SoftIIC_ReceiveACK();
+    SoftIIC_Stop();
 
     OLED_Dat();
 }
@@ -196,8 +196,8 @@ void OLED_Draw_CmdHead(uint8_t Page_Begin, uint8_t List_Begin)
  */
 void OLED_Draw_Data(uint8_t Dat)
 {
-    IIC_SendByte(Dat);
-    IIC_ReceiveACK();
+    SoftIIC_SendByte(Dat);
+    SoftIIC_ReceiveACK();
 }
 
 /**
@@ -212,7 +212,7 @@ void OLED_Draw_Data(uint8_t Dat)
  */
 void OLED_Draw_CmdTail(void)
 {
-    IIC_Stop();
+    SoftIIC_Stop();
 }
 
 /**
@@ -240,15 +240,15 @@ void OLED_Roll(uint8_t Page_Begin, uint8_t Page_End, uint8_t List_Begin, uint8_t
     OLED_Set(OLED_SetMode_OtherOptions, OLED_SetMode_Roll_DISABLE);
 
     OLED_Cmd();
-    if(RollMode & OLED_RollDerictionLeft)   {IIC_SendByte(OLED_RollDerictionCmd_Left);   IIC_ReceiveACK();}
-    else                                    {IIC_SendByte(OLED_RollDerictionCmd_Right);  IIC_ReceiveACK();}
-    IIC_SendByte(0);                                 IIC_ReceiveACK();
-    IIC_SendByte(Page_Begin);                        IIC_ReceiveACK();
-    IIC_SendByte(SpeedTable[RollMode & (~0x80)]);    IIC_ReceiveACK();
-    IIC_SendByte(Page_End);                          IIC_ReceiveACK();
-    IIC_SendByte(List_Begin);                        IIC_ReceiveACK();
-    IIC_SendByte(List_End);                          IIC_ReceiveACK();
-    IIC_Stop();
+    if(RollMode & OLED_RollDerictionLeft)   {SoftIIC_SendByte(OLED_RollDerictionCmd_Left);   SoftIIC_ReceiveACK();}
+    else                                    {SoftIIC_SendByte(OLED_RollDerictionCmd_Right);  SoftIIC_ReceiveACK();}
+    SoftIIC_SendByte(0);                                 SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(Page_Begin);                        SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(SpeedTable[RollMode & (~0x80)]);    SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(Page_End);                          SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(List_Begin);                        SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(List_End);                          SoftIIC_ReceiveACK();
+    SoftIIC_Stop();
 
     OLED_Set(OLED_SetMode_OtherOptions, OLED_SetMode_Roll_ENABLE);
 }
@@ -283,14 +283,14 @@ void OLED_Init(OLED_AddressingMode AddressingMode, OLED_SetMode_X_Flip X_FlipMod
     OLED_Set(OLED_SetMode_OtherOptions, OLED_SetMode_Roll_DISABLE);
 
     OLED_Cmd();
-    for(i = 0 ; i < sizeof(OLED_InitCmd) ; i++) {IIC_SendByte(OLED_InitCmd[i]);  IIC_ReceiveACK();}
-    IIC_SendByte(OLED_MultiplexRatioCmd);        IIC_ReceiveACK();
-    IIC_SendByte(OLED_Model_Dat[OLED_Model][0]); IIC_ReceiveACK();
-    IIC_SendByte(OLED_COMPinsCmd);               IIC_ReceiveACK();
-    IIC_SendByte(OLED_Model_Dat[OLED_Model][1]); IIC_ReceiveACK();
-    IIC_SendByte(OLED_AddressingModeCmd);        IIC_ReceiveACK();
-    IIC_SendByte(AddressingMode);                IIC_ReceiveACK();
-    IIC_Stop();
+    for(i = 0 ; i < sizeof(OLED_InitCmd) ; i++) {SoftIIC_SendByte(OLED_InitCmd[i]);  SoftIIC_ReceiveACK();}
+    SoftIIC_SendByte(OLED_MultiplexRatioCmd);        SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(OLED_Model_Dat[OLED_Model][0]); SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(OLED_COMPinsCmd);               SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(OLED_Model_Dat[OLED_Model][1]); SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(OLED_AddressingModeCmd);        SoftIIC_ReceiveACK();
+    SoftIIC_SendByte(AddressingMode);                SoftIIC_ReceiveACK();
+    SoftIIC_Stop();
 
     OLED_Set(OLED_SetMode_Brightness, Brightness);
     OLED_Set(OLED_SetMode_OtherOptions, X_FlipMode);
