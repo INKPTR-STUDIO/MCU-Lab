@@ -262,9 +262,9 @@ void OLED_Roll(uint8_t Page_Begin, uint8_t Page_End, uint8_t List_Begin, uint8_t
  * @brief   Complete the display setup initialization.
  * 
  * @param   AddressingMode  - select one to set addressing mode for display.
- *              OLED_ADDressingMode_HorizontalMode
- *              OLED_ADDressingMode_VerticalMode
- *              OLED_ADDressingMode_PageMode
+ *              OLED_AddressingMode_HorizontalMode
+ *              OLED_AddressingMode_VerticalMode
+ *              OLED_AddressingMode_PageMode
  *          X_FlipMode      - select one to set initial horizontal mirror flip.
  *              OLED_SetMode_X_Flip_Normal / OLED_SetMode_X_Flip_Mirror
  *          Y_FlipMode      - select one to set initial vertical mirror flip.
